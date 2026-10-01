@@ -1,0 +1,36 @@
+[project]
+name = "messenger-web-server"
+version = "1.1.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI-ідіома `param: X = Depends(...)` навмисна — це не мутабельний default-аргумент.
+extend-immutable-calls = [
+    "fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body",
+    "fastapi.Cookie", "fastapi.Header", "fastapi.File", "fastapi.Form", "fastapi.Security",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/versions/*" = ["E501", "I001"]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+exclude = ["^migrations/", "^\\.venv/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+timeout = 30
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
