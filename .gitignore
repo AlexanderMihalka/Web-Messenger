@@ -1,0 +1,24 @@
+# --- Бекенд (Python) ---
+server/.venv/
+**/__pycache__/
+*.pyc
+server/.pytest_cache/
+server/.mypy_cache/
+server/.ruff_cache/
+server/htmlcov/
+server/.coverage
+server/uploads/
+server/*.db
+server/.env
+
+# --- Фронтенд (Node) ---
+client/node_modules/
+client/dist/
+client/*.tsbuildinfo
+client/.env
+client/.env.local
+
+# --- Спільне ---
+.env
+.DS_Store
+*.log
