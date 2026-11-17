@@ -8,9 +8,12 @@ import { toApiError } from '../api/client'
 import { Avatar } from '../components/Avatar'
 import { Button } from '../components/Button'
 import { FormField } from '../components/FormField'
+import { LangSwitch } from '../components/LangSwitch'
+import { useI18n } from '../i18n/useI18n'
 
 export function ProfilePage() {
   const { user, refreshMe } = useAuth()
+  const { t } = useI18n()
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -26,7 +29,7 @@ export function ProfilePage() {
     mutationFn: usersApi.updateMe,
     onSuccess: async () => {
       await refreshMe()
-      setFormMessage({ kind: 'success', text: 'Зміни збережено' })
+      setFormMessage({ kind: 'success', text: t('profile.saved') })
       setFieldErrors({})
     },
     onError: (err) => {
@@ -76,12 +79,15 @@ export function ProfilePage() {
   return (
     <div className="min-h-dvh bg-ink-950 px-4 py-8">
       <div className="mx-auto max-w-xl">
-        <Link to="/chat" className="mb-6 inline-flex items-center gap-1.5 text-sm text-ink-400 hover:text-ink-100">
-          <ArrowLeft size={16} /> До чатів
-        </Link>
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <Link to="/chat" className="inline-flex items-center gap-1.5 text-sm text-ink-400 hover:text-ink-100">
+            <ArrowLeft size={16} /> {t('common.backToChats')}
+          </Link>
+          <LangSwitch />
+        </div>
 
         <div className="rounded-xl2 border border-ink-800 bg-ink-900 p-6">
-          <h1 className="font-display text-2xl text-ink-50">Профіль</h1>
+          <h1 className="font-display text-2xl text-ink-50">{t('profile.title')}</h1>
 
           <div className="mt-6 flex items-center gap-4">
             <div className="relative">
@@ -90,28 +96,28 @@ export function ProfilePage() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={avatarMutation.isPending}
                 className="absolute right-0 bottom-0 rounded-full border-2 border-ink-900 bg-signal-500 p-1.5 text-ink-950 hover:bg-signal-400 disabled:opacity-50"
-                aria-label="Змінити аватар"
+                aria-label={t('profile.changeAvatar')}
               >
                 <Camera size={14} />
               </button>
               <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={handleFileChange} />
             </div>
             <div>
-              <p className="text-sm text-ink-400">{avatarMutation.isPending ? 'Завантаження…' : 'JPEG, PNG, WEBP або GIF, до 2 МБ'}</p>
+              <p className="text-sm text-ink-400">{avatarMutation.isPending ? t('profile.uploading') : t('profile.avatarHint')}</p>
             </div>
           </div>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-            <FormField label="Імʼя" name="display_name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} error={fieldErrors.display_name} required />
-            <FormField label="Username" name="username" value={username} onChange={(e) => setUsername(e.target.value)} error={fieldErrors.username} required />
+            <FormField label={t('profile.displayName')} name="display_name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} error={fieldErrors.display_name} required />
+            <FormField label={t('profile.username')} name="username" value={username} onChange={(e) => setUsername(e.target.value)} error={fieldErrors.username} required />
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-ink-200">Про себе</span>
+              <span className="mb-1.5 block text-sm font-medium text-ink-200">{t('profile.bio')}</span>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={3}
                 maxLength={500}
-                placeholder="Кілька слів про себе…"
+                placeholder={t('profile.bioPlaceholder')}
                 className="w-full resize-none rounded-lg border border-ink-600 bg-ink-950 px-3.5 py-2.5 text-ink-50 placeholder:text-ink-500 focus:border-signal-400 focus:outline-none"
               />
               {fieldErrors.bio && <span className="mt-1.5 block text-xs text-rose-400">{fieldErrors.bio}</span>}
@@ -124,17 +130,17 @@ export function ProfilePage() {
             )}
 
             <Button type="submit" disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? 'Зберігаємо…' : 'Зберегти зміни'}
+              {updateMutation.isPending ? t('profile.saving') : t('profile.saveChanges')}
             </Button>
           </form>
         </div>
 
         <div className="mt-6 rounded-xl2 border border-ink-800 bg-ink-900 p-6">
-          <h2 className="font-display text-lg text-ink-50">Заблоковані користувачі</h2>
+          <h2 className="font-display text-lg text-ink-50">{t('profile.blockedTitle')}</h2>
           {blockedQuery.isLoading ? (
-            <p className="mt-3 text-sm text-ink-500">Завантаження…</p>
+            <p className="mt-3 text-sm text-ink-500">{t('common.loading')}</p>
           ) : blockedQuery.data?.length === 0 ? (
-            <p className="mt-3 text-sm text-ink-500">Ви ще нікого не заблокували.</p>
+            <p className="mt-3 text-sm text-ink-500">{t('profile.noBlocked')}</p>
           ) : (
             <ul className="mt-3 space-y-2">
               {blockedQuery.data?.map((blocked) => (
@@ -144,7 +150,7 @@ export function ProfilePage() {
                     <span className="text-sm text-ink-100">{blocked.display_name}</span>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => unblockMutation.mutate(blocked.id)}>
-                    <ShieldOff size={14} /> Розблокувати
+                    <ShieldOff size={14} /> {t('common.unblock')}
                   </Button>
                 </li>
               ))}

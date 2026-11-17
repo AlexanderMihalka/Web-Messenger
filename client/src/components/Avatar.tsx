@@ -1,5 +1,6 @@
 import { getAvatarClass, getInitials } from '../utils/format'
 import { clsx } from 'clsx'
+import { useI18n } from '../i18n/useI18n'
 
 interface AvatarProps {
   name: string
@@ -24,6 +25,7 @@ const DOT_SIZES: Record<NonNullable<AvatarProps['size']>, string> = {
 }
 
 export function Avatar({ name, id, avatarUrl, online, size = 'md' }: AvatarProps) {
+  const { t } = useI18n()
   return (
     <div className="relative shrink-0">
       {avatarUrl ? (
@@ -50,7 +52,7 @@ export function Avatar({ name, id, avatarUrl, online, size = 'md' }: AvatarProps
             DOT_SIZES[size],
             online ? 'bg-moss-500' : 'bg-ink-500',
           )}
-          aria-label={online ? 'у мережі' : 'не в мережі'}
+          aria-label={online ? t('chat.online') : t('chat.offline')}
         />
       )}
     </div>

@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import { LogOut, Settings, ShieldCheck } from 'lucide-react'
 import { Avatar } from './Avatar'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../i18n/useI18n'
 
 export function UserMenu() {
   const { user, logout } = useAuth()
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -39,7 +41,7 @@ export function UserMenu() {
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-ink-100 hover:bg-ink-800"
           >
-            <Settings size={16} /> Налаштування профілю
+            <Settings size={16} /> {t('userMenu.profile')}
           </Link>
           {user.role === 'ADMIN' && (
             <Link
@@ -47,14 +49,14 @@ export function UserMenu() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-ink-100 hover:bg-ink-800"
             >
-              <ShieldCheck size={16} /> Адмін-панель
+              <ShieldCheck size={16} /> {t('userMenu.admin')}
             </Link>
           )}
           <button
             onClick={() => void logout()}
             className="flex w-full items-center gap-2.5 border-t border-ink-800 px-3.5 py-2.5 text-left text-sm text-rose-400 hover:bg-ink-800"
           >
-            <LogOut size={16} /> Вийти
+            <LogOut size={16} /> {t('userMenu.logout')}
           </button>
         </div>
       )}

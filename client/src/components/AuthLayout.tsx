@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react'
+import { useI18n } from '../i18n/useI18n'
+import { LangSwitch } from './LangSwitch'
 
 export function AuthLayout({ children }: { children: ReactNode }) {
+  const { t } = useI18n()
   return (
     <div className="grid min-h-dvh md:grid-cols-2">
       <div className="relative hidden flex-col justify-between overflow-hidden bg-ink-950 p-12 md:flex">
@@ -18,20 +21,20 @@ export function AuthLayout({ children }: { children: ReactNode }) {
 
         <div className="relative z-10 max-w-md">
           <p className="font-display text-4xl leading-[1.15] text-ink-50">
-            Розмови, що лишаються між вами.
+            {t('authLayout.tagline')}
           </p>
           <p className="mt-4 text-[15px] leading-relaxed text-ink-400">
-            Приватні діалоги, доставка повідомлень у реальному часі та повний контроль над тим,
-            хто може вам написати.
+            {t('authLayout.description')}
           </p>
         </div>
 
         <p className="relative z-10 text-xs text-ink-500">
-          Навчальний проєкт — FastAPI, PostgreSQL, React, WebSocket
+          {t('authLayout.footer')}
         </p>
       </div>
 
-      <div className="flex items-center justify-center bg-ink-950 px-6 py-12 md:bg-ink-900">
+      <div className="relative flex items-center justify-center bg-ink-950 px-6 py-12 md:bg-ink-900">
+        <LangSwitch className="absolute top-4 right-4" />
         <div className="w-full max-w-[380px]">{children}</div>
       </div>
     </div>

@@ -3,12 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Search, SquarePen } from 'lucide-react'
 import { useConversations, useStartConversation } from '../../hooks/useConversations'
 import { useAuth } from '../../hooks/useAuth'
+import { useI18n } from '../../i18n/useI18n'
+import { LangSwitch } from '../LangSwitch'
 import { ConversationListItem } from '../ConversationListItem'
 import { UserSearchResults } from '../UserSearchResults'
 import { UserMenu } from '../UserMenu'
 
 export function Sidebar() {
   const { user } = useAuth()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const { conversationId } = useParams()
   const { data: conversations, isLoading } = useConversations()
@@ -37,11 +40,14 @@ export function Sidebar() {
           <Logo />
           <span className="font-display text-lg text-ink-50">Messenger</span>
         </div>
-        {totalUnread > 0 && (
-          <span className="rounded-full bg-signal-500/15 px-2 py-0.5 text-xs font-medium text-signal-400">
-            {totalUnread} нових
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {totalUnread > 0 && (
+            <span className="rounded-full bg-signal-500/15 px-2 py-0.5 text-xs font-medium text-signal-400">
+              {t('sidebar.unread', { count: totalUnread })}
+            </span>
+          )}
+          <LangSwitch />
+        </div>
       </div>
 
       <div className="px-4 pb-3">
@@ -54,7 +60,7 @@ export function Sidebar() {
               setSearching(e.target.value.trim().length > 0)
             }}
             onFocus={() => setSearching(query.trim().length > 0)}
-            placeholder="Знайти людей за іменем…"
+            placeholder={t('sidebar.searchPlaceholder')}
             className="w-full rounded-lg border border-ink-700 bg-ink-950 py-2.5 pr-3 pl-9 text-sm text-ink-50 placeholder:text-ink-500 focus:border-signal-400 focus:outline-none"
           />
         </div>
@@ -64,7 +70,7 @@ export function Sidebar() {
         {searching ? (
           <UserSearchResults query={query} onPick={pickUser} />
         ) : isLoading ? (
-          <div className="px-4 py-6 text-sm text-ink-500">Завантаження…</div>
+          <div className="px-4 py-6 text-sm text-ink-500">{t('common.loading')}</div>
         ) : conversations && conversations.length > 0 ? (
           conversations.map((conversation) => (
             <ConversationListItem
@@ -79,7 +85,7 @@ export function Sidebar() {
           <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
             <SquarePen size={28} className="text-ink-600" />
             <p className="text-sm text-ink-500">
-              Ще немає діалогів. Знайдіть когось у пошуку вище, щоб почати розмову.
+              {t('sidebar.noConversations')}
             </p>
           </div>
         )}

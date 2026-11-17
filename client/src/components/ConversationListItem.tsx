@@ -4,6 +4,8 @@ import { formatRelativeTime } from '../utils/format'
 import type { ConversationOut } from '../api/types'
 import { useTyping } from '../ws/TypingContext'
 import { TypingDots } from './TypingDots'
+import { useI18n } from '../i18n/useI18n'
+import { translate } from '../i18n/core'
 
 export function ConversationListItem({
   conversation,
@@ -18,6 +20,7 @@ export function ConversationListItem({
 }) {
   const { partner, last_message, unread_count } = conversation
   const { isTyping } = useTyping()
+  useI18n() // перемальовуємо превʼю й час при зміні мови
   const partnerTyping = isTyping(conversation.id, partner.id)
 
   return (
@@ -55,8 +58,8 @@ export function ConversationListItem({
 
 function previewText(conversation: ConversationOut, currentUserId: number): string {
   const { last_message: message } = conversation
-  if (!message) return 'Немає повідомлень'
-  if (message.is_deleted) return 'Повідомлення видалено'
-  const prefix = message.sender_id === currentUserId ? 'Ви: ' : ''
+  if (!message) return translate('conversation.noMessages')
+  if (message.is_deleted) return translate('message.deleted')
+  const prefix = message.sender_id === currentUserId ? translate('conversation.you') : ''
   return `${prefix}${message.content}`
 }

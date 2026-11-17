@@ -1,5 +1,5 @@
 import { format, isSameDay, isSameYear, isYesterday } from "date-fns";
-import { uk } from "date-fns/locale";
+import { getDateLocale, translate } from "../i18n/core";
 
 export function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -31,12 +31,12 @@ export function formatRelativeTime(iso: string): string {
   const now = new Date();
   const diffMinutes = (now.getTime() - date.getTime()) / 60_000;
 
-  if (diffMinutes < 1) return "щойно";
-  if (diffMinutes < 60) return `${Math.floor(diffMinutes)} хв`;
+  if (diffMinutes < 1) return translate("time.justNow");
+  if (diffMinutes < 60) return translate("time.minutes", { n: Math.floor(diffMinutes) });
   if (isSameDay(date, now)) return format(date, "HH:mm");
-  if (isYesterday(date)) return "учора";
-  if (isSameYear(date, now)) return format(date, "d MMM", { locale: uk });
-  return format(date, "d MMM yyyy", { locale: uk });
+  if (isYesterday(date)) return translate("time.yesterday");
+  if (isSameYear(date, now)) return format(date, "d MMM", { locale: getDateLocale() });
+  return format(date, "d MMM yyyy", { locale: getDateLocale() });
 }
 
 /** Час під бульбашкою повідомлення. */
@@ -48,20 +48,20 @@ export function formatMessageTime(iso: string): string {
 export function formatDayDivider(iso: string): string {
   const date = new Date(iso);
   const now = new Date();
-  if (isSameDay(date, now)) return "Сьогодні";
-  if (isYesterday(date)) return "Учора";
-  if (isSameYear(date, now)) return format(date, "d MMMM", { locale: uk });
-  return format(date, "d MMMM yyyy", { locale: uk });
+  if (isSameDay(date, now)) return translate("time.dayToday");
+  if (isYesterday(date)) return translate("time.dayYesterday");
+  if (isSameYear(date, now)) return format(date, "d MMMM", { locale: getDateLocale() });
+  return format(date, "d MMMM yyyy", { locale: getDateLocale() });
 }
 
 export function formatLastSeen(iso: string | null): string {
-  if (!iso) return "давно не в мережі";
+  if (!iso) return translate("time.lastSeenLongAgo");
   const date = new Date(iso);
   const now = new Date();
   const diffMinutes = (now.getTime() - date.getTime()) / 60_000;
-  if (diffMinutes < 1) return "був(ла) щойно";
-  if (diffMinutes < 60) return `був(ла) ${Math.floor(diffMinutes)} хв тому`;
-  if (isSameDay(date, now)) return `був(ла) у мережі сьогодні о ${format(date, "HH:mm")}`;
-  if (isYesterday(date)) return `був(ла) у мережі вчора о ${format(date, "HH:mm")}`;
-  return `був(ла) у мережі ${format(date, "d MMMM", { locale: uk })}`;
+  if (diffMinutes < 1) return translate("time.lastSeenJustNow");
+  if (diffMinutes < 60) return translate("time.lastSeenMinutes", { n: Math.floor(diffMinutes) });
+  if (isSameDay(date, now)) return translate("time.lastSeenToday", { time: format(date, "HH:mm") });
+  if (isYesterday(date)) return translate("time.lastSeenYesterday", { time: format(date, "HH:mm") });
+  return translate("time.lastSeenDate", { date: format(date, "d MMMM", { locale: getDateLocale() }) });
 }

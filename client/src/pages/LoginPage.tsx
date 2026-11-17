@@ -6,9 +6,11 @@ import { Button } from '../components/Button'
 import { FormField } from '../components/FormField'
 import { useAuth } from '../hooks/useAuth'
 import { toApiError } from '../api/client'
+import { useI18n } from '../i18n/useI18n'
 
 export function LoginPage() {
   const { login } = useAuth()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
   const [loginValue, setLoginValue] = useState('')
@@ -34,12 +36,12 @@ export function LoginPage() {
 
   return (
     <AuthLayout>
-      <h1 className="font-display text-3xl text-ink-50">Увійти</h1>
-      <p className="mt-2 text-sm text-ink-400">Радий вас знову бачити.</p>
+      <h1 className="font-display text-3xl text-ink-50">{t('login.title')}</h1>
+      <p className="mt-2 text-sm text-ink-400">{t('login.subtitle')}</p>
 
       <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
         <FormField
-          label="Username або email"
+          label={t('login.loginLabel')}
           name="login"
           autoComplete="username"
           value={loginValue}
@@ -48,7 +50,7 @@ export function LoginPage() {
           autoFocus
         />
         <FormField
-          label="Пароль"
+          label={t('login.password')}
           name="password"
           type={showPassword ? 'text' : 'password'}
           autoComplete="current-password"
@@ -60,7 +62,7 @@ export function LoginPage() {
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               className="text-ink-400 hover:text-ink-200"
-              aria-label={showPassword ? 'Сховати пароль' : 'Показати пароль'}
+              aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
               tabIndex={-1}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -75,14 +77,14 @@ export function LoginPage() {
         )}
 
         <Button type="submit" className="w-full" disabled={submitting}>
-          {submitting ? 'Входимо…' : 'Увійти'}
+          {submitting ? t('login.submitting') : t('login.submit')}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-400">
-        Немає акаунта?{' '}
+        {t('login.noAccount')}{' '}
         <Link to="/register" className="font-medium text-signal-400 hover:text-signal-300">
-          Зареєструватися
+          {t('login.toRegister')}
         </Link>
       </p>
     </AuthLayout>

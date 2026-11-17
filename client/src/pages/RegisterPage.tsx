@@ -5,11 +5,11 @@ import { Button } from '../components/Button'
 import { FormField } from '../components/FormField'
 import { useAuth } from '../hooks/useAuth'
 import { toApiError } from '../api/client'
-
-const USERNAME_HINT = '3–32 символи: латиниця, цифри, підкреслення'
+import { useI18n } from '../i18n/useI18n'
 
 export function RegisterPage() {
   const { register } = useAuth()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const [form, setForm] = useState({
     username: '',
@@ -32,7 +32,7 @@ export function RegisterPage() {
     setFieldErrors({})
 
     if (form.password !== form.confirm_password) {
-      setFieldErrors({ confirm_password: 'Паролі не збігаються' })
+      setFieldErrors({ confirm_password: t('register.mismatch') })
       return
     }
 
@@ -60,30 +60,30 @@ export function RegisterPage() {
 
   return (
     <AuthLayout>
-      <h1 className="font-display text-3xl text-ink-50">Створити акаунт</h1>
-      <p className="mt-2 text-sm text-ink-400">Це займе менше хвилини.</p>
+      <h1 className="font-display text-3xl text-ink-50">{t('register.title')}</h1>
+      <p className="mt-2 text-sm text-ink-400">{t('register.subtitle')}</p>
 
       <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
         <FormField
-          label="Username"
+          label={t('register.username')}
           name="username"
           autoComplete="username"
           value={form.username}
           onChange={(e) => update('username', e.target.value)}
           error={fieldErrors.username}
-          hint={!fieldErrors.username ? USERNAME_HINT : undefined}
+          hint={!fieldErrors.username ? t('register.usernameHint') : undefined}
           required
           autoFocus
         />
         <FormField
-          label="Імʼя (необовʼязково)"
+          label={t('register.displayName')}
           name="display_name"
           value={form.display_name}
           onChange={(e) => update('display_name', e.target.value)}
-          placeholder={form.username || 'Як до вас звертатися'}
+          placeholder={form.username || t('register.displayNamePlaceholder')}
         />
         <FormField
-          label="Email"
+          label={t('register.email')}
           name="email"
           type="email"
           autoComplete="email"
@@ -93,18 +93,18 @@ export function RegisterPage() {
           required
         />
         <FormField
-          label="Пароль"
+          label={t('register.password')}
           name="password"
           type="password"
           autoComplete="new-password"
           value={form.password}
           onChange={(e) => update('password', e.target.value)}
           error={fieldErrors.password}
-          hint={!fieldErrors.password ? 'Щонайменше 8 символів, літера й цифра' : undefined}
+          hint={!fieldErrors.password ? t('register.passwordHint') : undefined}
           required
         />
         <FormField
-          label="Повторіть пароль"
+          label={t('register.confirmPassword')}
           name="confirm_password"
           type="password"
           autoComplete="new-password"
@@ -121,14 +121,14 @@ export function RegisterPage() {
         )}
 
         <Button type="submit" className="w-full" disabled={submitting}>
-          {submitting ? 'Створюємо…' : 'Створити акаунт'}
+          {submitting ? t('register.submitting') : t('register.submit')}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-400">
-        Вже є акаунт?{' '}
+        {t('register.haveAccount')}{' '}
         <Link to="/login" className="font-medium text-signal-400 hover:text-signal-300">
-          Увійти
+          {t('register.toLogin')}
         </Link>
       </p>
     </AuthLayout>

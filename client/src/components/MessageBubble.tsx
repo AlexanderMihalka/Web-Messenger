@@ -4,6 +4,7 @@ import { Check, CheckCheck, Pencil, Trash2, X } from 'lucide-react'
 import type { MessageOut } from '../api/types'
 import { formatMessageTime } from '../utils/format'
 import { Button } from './Button'
+import { useI18n } from '../i18n/useI18n'
 
 interface MessageBubbleProps {
   message: MessageOut
@@ -13,6 +14,7 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ message, mine, onEdit, onDelete }: MessageBubbleProps) {
+  const { t } = useI18n()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(message.content)
   const [hovering, setHovering] = useState(false)
@@ -40,14 +42,14 @@ export function MessageBubble({ message, mine, onEdit, onDelete }: MessageBubble
             <button
               onClick={() => setEditing(true)}
               className="rounded p-1 text-ink-500 hover:bg-ink-800 hover:text-ink-200"
-              aria-label="Редагувати"
+              aria-label={t('common.edit')}
             >
               <Pencil size={13} />
             </button>
             <button
               onClick={onDelete}
               className="rounded p-1 text-ink-500 hover:bg-ink-800 hover:text-rose-400"
-              aria-label="Видалити"
+              aria-label={t('common.delete')}
             >
               <Trash2 size={13} />
             </button>
@@ -79,16 +81,16 @@ export function MessageBubble({ message, mine, onEdit, onDelete }: MessageBubble
                 rows={2}
               />
               <div className="flex items-center justify-end gap-2 text-ink-950">
-                <button onClick={() => setEditing(false)} className="rounded p-1 hover:bg-ink-950/10" aria-label="Скасувати">
+                <button onClick={() => setEditing(false)} className="rounded p-1 hover:bg-ink-950/10" aria-label={t('common.cancel')}>
                   <X size={14} />
                 </button>
-                <button onClick={submitEdit} className="rounded p-1 hover:bg-ink-950/10" aria-label="Зберегти">
+                <button onClick={submitEdit} className="rounded p-1 hover:bg-ink-950/10" aria-label={t('common.save')}>
                   <Check size={14} />
                 </button>
               </div>
             </div>
           ) : message.is_deleted ? (
-            <span className={clsx('italic', mine ? 'text-ink-950/60' : 'text-ink-400')}>Повідомлення видалено</span>
+            <span className={clsx('italic', mine ? 'text-ink-950/60' : 'text-ink-400')}>{t('message.deleted')}</span>
           ) : (
             <span className="whitespace-pre-wrap">{message.content}</span>
           )}
@@ -100,7 +102,7 @@ export function MessageBubble({ message, mine, onEdit, onDelete }: MessageBubble
                 mine ? 'justify-end text-ink-950/60' : 'justify-start text-ink-500',
               )}
             >
-              {message.is_edited && !message.is_deleted && <span>ред.</span>}
+              {message.is_edited && !message.is_deleted && <span>{t('message.edited')}</span>}
               <span>{formatMessageTime(message.created_at)}</span>
               {mine && !message.is_deleted && (message.is_read ? <CheckCheck size={13} /> : <Check size={13} />)}
             </div>
@@ -122,16 +124,15 @@ export function DayDivider({ label }: { label: string }) {
 }
 
 export function BlockBanner({ blockedByMe, onUnblock }: { blockedByMe: boolean; onUnblock: () => void }) {
+  const { t } = useI18n()
   return (
     <div className="flex items-center justify-between gap-3 border-t border-ink-800 bg-ink-900 px-5 py-3 text-sm">
       <span className="text-ink-400">
-        {blockedByMe
-          ? 'Ви заблокували цього користувача — повідомлення надсилати не можна.'
-          : 'Цей користувач заблокував вас — повідомлення надсилати не можна.'}
+        {blockedByMe ? t('message.blockedByMe') : t('message.blockedByThem')}
       </span>
       {blockedByMe && (
         <Button variant="outline" size="sm" onClick={onUnblock}>
-          Розблокувати
+          {t('common.unblock')}
         </Button>
       )}
     </div>

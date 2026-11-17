@@ -1,5 +1,6 @@
 // Axios-інстанс: access-токен живе лише в пам'яті (не в localStorage — захист від XSS),
 // refresh-токен — в httpOnly cookie, яку браузер сам додає завдяки withCredentials.
+import { translate, translateServerMessage } from "../i18n/core";
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
 import type { TokenResponse } from "./types";
@@ -93,11 +94,15 @@ export function toApiError(error: unknown): ApiError {
       return {
         status: error.response?.status ?? 0,
         code: data.error.code,
-        message: data.error.message,
-        fields: data.error.fields,
+        message: translateServerMessage(data.error.message),
+        fields: data.error.fields?.map((f) => ({ ...f, message: translateServerMessage(f.message) })),
       };
     }
-    return { status: error.response?.status ?? 0, code: "network_error", message: error.message };
+    return {
+      status: error.response?.status ?? 0,
+      code: "network_error",
+      message: error.response ? error.message : translate("error.network"),
+    };
   }
-  return { status: 0, code: "unknown_error", message: "Щось пішло не так" };
+  return { status: 0, code: "unknown_error", message: translate("error.unknown") };
 }

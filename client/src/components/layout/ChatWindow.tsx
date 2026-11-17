@@ -13,9 +13,11 @@ import { BlockBanner, DayDivider, MessageBubble } from '../MessageBubble'
 import { TypingDots } from '../TypingDots'
 import { EmptyState } from '../EmptyState'
 import { formatDayDivider, formatLastSeen } from '../../utils/format'
+import { useI18n } from '../../i18n/useI18n'
 
 export function ChatWindow({ conversationId }: { conversationId: number }) {
   const { user } = useAuth()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: conversations } = useConversations()
@@ -89,7 +91,7 @@ export function ChatWindow({ conversationId }: { conversationId: number }) {
   if (!conversation) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-ink-500">
-        Завантаження діалогу…
+        {t('chat.loadingConversation')}
       </div>
     )
   }
@@ -100,17 +102,17 @@ export function ChatWindow({ conversationId }: { conversationId: number }) {
   return (
     <div className="flex h-dvh flex-1 flex-col bg-ink-950">
       <header className="flex items-center gap-3 border-b border-ink-800 bg-ink-900 px-4 py-3">
-        <button onClick={() => navigate('/chat')} className="text-ink-400 hover:text-ink-100 md:hidden" aria-label="Назад">
+        <button onClick={() => navigate('/chat')} className="text-ink-400 hover:text-ink-100 md:hidden" aria-label={t('common.back')}>
           <ArrowLeft size={20} />
         </button>
         <Avatar name={partner.display_name} id={partner.id} avatarUrl={partner.avatar_url} online={partner.is_online} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[15px] font-medium text-ink-50">{partner.display_name}</p>
           {partnerTyping ? (
-            <TypingDots label="друкує…" />
+            <TypingDots label={t('chat.typing')} />
           ) : (
             <p className="truncate text-xs text-ink-500">
-              {partner.is_online ? 'у мережі' : formatLastSeen(partner.last_seen_at)}
+              {partner.is_online ? t('chat.online') : formatLastSeen(partner.last_seen_at)}
             </p>
           )}
         </div>
@@ -118,7 +120,7 @@ export function ChatWindow({ conversationId }: { conversationId: number }) {
           <button
             onClick={() => setMenuOpen((v) => !v)}
             className="rounded-lg p-2 text-ink-400 hover:bg-ink-800 hover:text-ink-100"
-            aria-label="Дії з діалогом"
+            aria-label={t('chat.actions')}
           >
             <MoreVertical size={18} />
           </button>
@@ -133,7 +135,7 @@ export function ChatWindow({ conversationId }: { conversationId: number }) {
                 className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-ink-100 hover:bg-ink-800"
               >
                 {conversation.blocked_by_me ? <ShieldOff size={16} /> : <UserRoundX size={16} />}
-                {conversation.blocked_by_me ? 'Розблокувати' : 'Заблокувати'}
+                {conversation.blocked_by_me ? t('common.unblock') : t('common.block')}
               </button>
               <button
                 onClick={() => {
@@ -143,7 +145,7 @@ export function ChatWindow({ conversationId }: { conversationId: number }) {
                 }}
                 className="flex w-full items-center gap-2.5 border-t border-ink-800 px-3.5 py-2.5 text-left text-sm text-rose-400 hover:bg-ink-800"
               >
-                <Trash2 size={16} /> Видалити діалог
+                <Trash2 size={16} /> {t('chat.deleteConversation')}
               </button>
             </div>
           )}
@@ -152,11 +154,11 @@ export function ChatWindow({ conversationId }: { conversationId: number }) {
 
       <div ref={scrollRef} onScroll={handleScroll} className="scrollbar-thin flex-1 overflow-y-auto px-5 py-4">
         {messagesQuery.isLoading ? (
-          <div className="flex h-full items-center justify-center text-sm text-ink-500">Завантаження…</div>
+          <div className="flex h-full items-center justify-center text-sm text-ink-500">{t('common.loading')}</div>
         ) : messages.length === 0 ? (
           <EmptyState
-            title={`Це початок вашої розмови з ${partner.display_name}`}
-            description="Напишіть перше повідомлення нижче."
+            title={t('chat.startTitle', { name: partner.display_name })}
+            description={t('chat.startDescription')}
           />
         ) : (
           <MessageList messages={messages} currentUserId={user!.id} onEdit={(id, content) => editMessage.mutate({ messageId: id, content })} onDelete={(id) => deleteMessage.mutate(id)} />

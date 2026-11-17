@@ -1,143 +1,184 @@
-# Messenger Web
+# Web Messenger
 
-Навчальний веб-месенджер із приватними діалогами в реальному часі. Бекенд — FastAPI +
-PostgreSQL, фронтенд — React + TypeScript, звʼязок у реальному часі — WebSocket.
+A learning web messenger with real-time private conversations. The backend is FastAPI + PostgreSQL, the frontend is React + TypeScript, and real-time delivery runs over WebSocket. The interface is available in **English and Ukrainian**.
 
-Повна технічна специфікація: [`docs/TZ_Messenger_FastAPI_React.docx`](docs/TZ_Messenger_FastAPI_React.docx)
-(доопрацьована версія — з уточненнями, позначеними на початку документа).
+![Chat](docs/screenshots/chat.png)
 
-## Можливості
 
-- Реєстрація та вхід (username або email), JWT access-токени, httpOnly refresh-cookie з ротацією
-- Приватні діалоги 1-на-1, історія повідомлень зі сторінковою підгрузкою
-- У реальному часі: нові повідомлення, редагування, видалення, статус прочитання, «в мережі» / «друкує…»
-- Профіль: імʼя, username, опис, аватар (із серверною перевіркою, що це справді зображення)
-- Блокування користувачів — забороняє надсилання нових повідомлень в обидва боки
-- Адмін-панель: користувачі, статистика, журнал подій безпеки (auth, блокування)
+## Features
 
-## Стек
+- Sign up and sign in (username or email), JWT access tokens, httpOnly refresh cookie with rotation
+- Private 1-to-1 conversations with paginated message history
+- Real time: new messages, editing, deleting, read receipts, "online" and "typing…" indicators
+- Profile: name, username, bio, avatar (the server checks that the file is really an image)
+- Blocking users: prevents sending new messages in both directions
+- Admin panel: users, statistics, security event log (auth, blocking)
+- **Bilingual interface**: Ukrainian and English, switched with the **UK / EN** buttons; the choice is remembered in the browser
 
-| Шар | Технології |
+## Tech stack
+
+| Layer | Technologies |
 |---|---|
-| Бекенд | FastAPI, SQLAlchemy 2, PostgreSQL, Alembic, Argon2id, PyJWT, WebSocket |
-| Фронтенд | React 18, TypeScript, Vite, Tailwind CSS, TanStack Query, React Router |
-| Інфраструктура | Docker Compose, nginx (продакшн-віддача фронтенду + проксі) |
+| Backend | FastAPI, SQLAlchemy 2, PostgreSQL, Alembic, Argon2id, PyJWT, WebSocket |
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS, TanStack Query, React Router |
+| Infrastructure | Docker Compose, nginx (serves the production frontend and proxies the API) |
 
-## Швидкий старт (Docker Compose)
+## Quick start (Docker Compose)
 
 ```bash
 cp .env.example .env
-# відредагуйте .env: щонайменше SECRET_KEY (openssl rand -hex 32) і ADMIN_PASSWORD
+# edit .env: fill in POSTGRES_PASSWORD, SECRET_KEY and ADMIN_PASSWORD
+# (a random value: openssl rand -hex 32)
 docker compose up --build
 ```
 
-- Застосунок: http://localhost:8080
-- API напряму: http://localhost:8000, Swagger — http://localhost:8000/docs
-- Обліковий запис адміністратора створюється автоматично зі значень `ADMIN_USERNAME` /
-  `ADMIN_EMAIL` / `ADMIN_PASSWORD` з `.env` (лише якщо такого користувача ще нема).
+- App: http://localhost:8080
+- API directly: http://localhost:8000, Swagger: http://localhost:8000/docs
+- The administrator account is created automatically from `ADMIN_USERNAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env` (only if that user does not exist yet).
+- The PostgreSQL port is published on `127.0.0.1` only, so the database is not reachable from the network.
 
-## Розробка без Docker
+`docker compose up` refuses to start until `POSTGRES_PASSWORD`, `SECRET_KEY` and `ADMIN_PASSWORD` are set, so no default passwords ever run by accident. Generate values with any of these:
 
-### Бекенд
+```bash
+# macOS / Linux
+openssl rand -hex 32
 
-Потрібен Python 3.12+ і PostgreSQL 16 (локально або в контейнері).
+# Node.js (any OS)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# Windows PowerShell
+-join ((1..32) | ForEach-Object { '{0:x2}' -f (Get-Random -Maximum 256) })
+```
+
+> The database password is applied only when the database volume is created. If you already started the project and then change `POSTGRES_PASSWORD`, run `docker compose down -v` first (this deletes the stored data).
+
+## Interface language
+
+Use the **UK / EN** switch in the header of the chat list, or in the top-right corner of the sign-in, sign-up, profile and admin pages.
+
+- The language is stored in the browser's `localStorage` under the key `lang`. The default is Ukrainian.
+- All interface texts are in `client/src/i18n/messages.ts`, one dictionary per language. The English dictionary is typed against the Ukrainian keys, so TypeScript will not let you forget a translation.
+- Dates and times follow the selected language (`date-fns` locales).
+- The API returns error messages in Ukrainian. The interface translates the known ones into the selected language and shows unknown ones as they are.
+- User content (names, messages) is never translated.
+
+To add a language, add a dictionary to `messages.ts`, extend `LANGS` in `client/src/i18n/core.ts` and map its date-fns locale in `getDateLocale()`.
+
+## Screenshots
+
+| Sign in | Sign-up validation |
+|---|---|
+| ![Sign in](docs/screenshots/login.png) | ![Sign-up validation](docs/screenshots/register-validation.png) |
+
+| Chat (English) | Chat (Ukrainian) |
+|---|---|
+| ![Chat](docs/screenshots/chat.png) | ![Chat in Ukrainian](docs/screenshots/chat-ukrainian.png) |
+
+| Profile | Admin: users |
+|---|---|
+| ![Profile](docs/screenshots/profile.png) | ![Admin users](docs/screenshots/admin-users.png) |
+
+| Admin: event log |
+|---|
+| ![Admin event log](docs/screenshots/admin-logs.png) |
+
+## Development without Docker
+
+### Backend
+
+Requires Python 3.12+ and PostgreSQL 16 (local or in a container).
 
 ```bash
 cd server
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
-cp .env.example .env   # відредагуйте DATABASE_URL під вашу БД
+cp .env.example .env   # edit DATABASE_URL for your database; set SECRET_KEY and ADMIN_PASSWORD
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-### Фронтенд
+### Frontend
 
-Потрібен Node.js 20+.
+Requires Node.js 20+.
 
 ```bash
 cd client
 npm install
-cp .env.example .env   # VITE_PROXY_TARGET — адреса бекенду, типово http://localhost:8000
+cp .env.example .env   # VITE_PROXY_TARGET is the backend address, http://localhost:8000 by default
 npm run dev
 ```
 
-Vite-девсервер (типово `:5173`) проксіює `/api`, `/uploads` і `/ws` на бекенд — у розробці
-CORS не заважає.
+The Vite dev server (`:5173` by default) proxies `/api`, `/uploads` and `/ws` to the backend, so CORS does not get in the way during development.
 
-## Тести
+## Tests
 
 ```bash
 cd server
 source .venv/bin/activate
 export TEST_DATABASE_URL="postgresql+psycopg://messenger:messenger@localhost:5432/messenger_test"
-pytest --cov=app --cov-report=term-missing   # unit + integration (у т.ч. реальні WebSocket-зʼєднання)
-ruff check app migrations     # лінт
-mypy app                      # типи
+pytest --cov=app --cov-report=term-missing   # unit + integration (including real WebSocket connections)
+ruff check app migrations     # lint
+mypy app                      # types
 ```
 
-Якщо `TEST_DATABASE_URL` не задано, тести використовують файлову SQLite — зручно для
-швидкого прогону, але деякі особливості PostgreSQL (наприклад точні повідомлення про
-порушення обмежень) не перевіряються. У CI (`.github/workflows/ci.yml`) завжди
-використовується справжній PostgreSQL.
+If `TEST_DATABASE_URL` is not set, the tests use a file-based SQLite database. That is convenient for a quick run, but some PostgreSQL specifics (for example exact constraint-violation messages) are not checked. CI (`.github/workflows/ci.yml`) always uses a real PostgreSQL.
 
-## Структура репозиторію
+Frontend checks:
+
+```bash
+cd client
+npm run lint && npm run typecheck && npm run build
+```
+
+## Repository structure
 
 ```
-server/                 FastAPI-застосунок
+server/                 FastAPI application
   app/
-    core/                конфігурація, БД, безпека, помилки, rate limiting
-    models/               SQLAlchemy ORM-моделі
-    schemas/               Pydantic-схеми запитів/відповідей
-    repositories/           SQL-запити, ізольовані від бізнес-логіки
-    services/                бізнес-логіка (не залежить від FastAPI/HTTP)
-    routers/                  REST-ендпоінти
-    websocket/                 /ws — менеджер зʼєднань, події, обробник
-  migrations/              Alembic-міграції
+    core/                configuration, database, security, errors, rate limiting
+    models/               SQLAlchemy ORM models
+    schemas/               Pydantic request/response schemas
+    repositories/           SQL queries, isolated from business logic
+    services/                business logic (independent of FastAPI/HTTP)
+    routers/                  REST endpoints
+    websocket/                 /ws: connection manager, events, handler
+  migrations/              Alembic migrations
   tests/
-    unit/                   сервіси й утиліти без HTTP
-    integration/             повний HTTP- і WebSocket-стек через TestClient
+    unit/                   services and utilities without HTTP
+    integration/             full HTTP and WebSocket stack through TestClient
 
-client/                 React-застосунок
+client/                 React application
   src/
-    api/                    типізовані виклики бекенду + axios-клієнт з refresh-flow
-    context/, hooks/          автентифікація, React Query хуки для даних
-    ws/                        WebSocket-контекст (реконект, presence) і typing-контекст
-    components/, pages/         UI
+    api/                    typed backend calls + axios client with refresh flow
+    context/, hooks/          authentication, React Query data hooks
+    i18n/                      UK/EN dictionaries, language provider and helpers
+    ws/                         WebSocket context (reconnect, presence) and typing context
+    components/, pages/          UI (LangSwitch.tsx is the language switch)
 
-docs/                   Технічна специфікація (доопрацьована) і діаграми
-.github/workflows/      CI (лінт, типи, тести бекенду; білд фронтенду)
-docker-compose.yml       postgres + backend + frontend одним стеком
+docs/                   Technical specification (revised), diagrams and screenshots
+.github/workflows/      CI (lint, types, backend tests; frontend build)
+docker-compose.yml       postgres + backend + frontend as one stack
 ```
 
-## Ключові архітектурні рішення
+## Key architectural decisions
 
-- **Одне WebSocket-зʼєднання на користувача** (`/ws?token=...`), а не на діалог — так лічильники
-  непрочитаних і статус «в мережі» оновлюються для всього списку чатів, а не лише відкритого.
-  Токен передається query-параметром, бо `WebSocket` у браузері не дозволяє власні заголовки
-  під час рукостискання.
-- **REST — єдине джерело істини для запису повідомлень**; WebSocket розсилає вже збережену подію
-  іншим підключеним учасникам. Клієнт відправляє через `POST`, WS використовує для push.
-- **Access-токен — лише в памʼяті JS**, refresh-токен — у httpOnly cookie з ротацією при кожному
-  оновленні. Це свідомий компроміс: XSS не може вкрасти довгоживучий токен, а CSRF пом'якшується
-  тим, що cookie діє лише на `/api/v1/auth/*` і немає активного `SameSite`-небезпечного стану.
-- **Синхронні (не `async def`) REST-роутери.** FastAPI виконує їх у threadpool, тому синхронний
-  SQLAlchemy `Session` не блокує event loop. WebSocket-розсилку з такого роутера виконує
-  `anyio.from_thread.run(...)` — офіційний спосіб anyio «достукатися» з робочого потоку назад
-  у event loop, де живуть відкриті WS-зʼєднання.
-- **`is_read` у повідомленні завжди означає «чи прочитав отримувач»**, а не «чи прочитав той, хто
-  зараз дивиться» — тому те саме серіалізоване повідомлення коректно розсилається по WS обом
-  учасникам діалогу без перерахунку під кожного з них.
+- **One WebSocket connection per user** (`/ws?token=...`), not per conversation. That way unread counters and "online" status update for the whole chat list, not just the open conversation. The token is passed as a query parameter because the browser `WebSocket` API does not allow custom headers during the handshake.
+- **REST is the single source of truth for writing messages**; WebSocket pushes the already-saved event to the other connected participants. The client sends through `POST` and uses WS only for push.
+- **The access token lives only in JS memory**; the refresh token lives in an httpOnly cookie that is rotated on every refresh. This is a deliberate trade-off: XSS cannot steal a long-lived token, and CSRF is mitigated because the cookie is only sent to `/api/v1/auth/*`.
+- **Synchronous (not `async def`) REST routers.** FastAPI runs them in a threadpool, so the synchronous SQLAlchemy `Session` does not block the event loop. WebSocket fan-out from such a router goes through `anyio.from_thread.run(...)`, the official way to reach back into the event loop where the open WS connections live.
+- **`is_read` on a message always means "has the recipient read it"**, not "has whoever is looking read it", so the same serialized message can be sent over WS to both participants without recalculating for each of them.
 
-## Відомі обмеження
+## Security notes
 
-- **Один процес бекенду.** Реєстр активних WebSocket-зʼєднань і rate-limiter живуть у пам'яті
-  процесу (`app/websocket/manager.py`, `app/core/rate_limit.py`). З кількома воркерами/репліками
-  кожен матиме власний реєстр, і push не долітав би до сокета на іншому воркері. Горизонтальне
-  масштабування потребувало б спільного стану (Redis pub/sub + rate limiter) — свідомо поза
-  межами цього навчального проєкту.
-- **Журнал подій (`/admin/logs`)** фіксує лише події автентифікації й дії адміністратора/
-  блокування — не кожне повідомлення чи діалог, щоб залишатись читомим, а не тонути в рутинному
-  трафіку чату.
-- Аватари зберігаються на локальному диску контейнера (`uploads_data` volume), не в обʼєктному
-  сховищі — достатньо для навчального проєкту, але не для кількох реплік бекенду одночасно.
+- Passwords are hashed with Argon2id; access tokens are short-lived (15 minutes) and refresh tokens rotate.
+- Rate limiting is enabled by default, avatar uploads are verified server-side, and CORS is limited to the configured origins.
+- Nothing secret is stored in the repository: `.env` files are in `.gitignore`, and Docker Compose reads `POSTGRES_PASSWORD`, `SECRET_KEY` and `ADMIN_PASSWORD` from `.env` and refuses to start without them. The backend also refuses to start in production with a default or short `SECRET_KEY`.
+- The PostgreSQL port is bound to `127.0.0.1`. Before deploying anywhere public, put the services behind HTTPS and set `COOKIE_SECURE=true`.
+- The fonts (Fraunces and Manrope) are loaded from Google Fonts in `client/index.html`. For a fully self-hosted deployment, bundle them locally.
+
+## Known limitations
+
+- **A single backend process.** The registry of active WebSocket connections and the rate limiter live in process memory (`app/websocket/manager.py`, `app/core/rate_limit.py`). With several workers or replicas each would have its own registry, and a push would not reach a socket on another worker. Horizontal scaling would need shared state (Redis pub/sub and a shared rate limiter), which is deliberately out of scope for this learning project.
+- **The event log (`/admin/logs`)** records only authentication events and admin/blocking actions, not every message or conversation, so that it stays readable.
+- Avatars are stored on the container's local disk (the `uploads_data` volume), not in object storage. That is fine for a learning project, but not for several backend replicas at once.
+- The Swagger documentation and the API error messages are in Ukrainian; the web interface translates the known error messages.

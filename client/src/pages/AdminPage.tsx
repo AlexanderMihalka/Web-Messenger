@@ -4,30 +4,25 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, Ban, ShieldCheck, Trash2 } from 'lucide-react'
 import { adminApi } from '../api/admin'
 import { Avatar } from '../components/Avatar'
+import { LangSwitch } from '../components/LangSwitch'
+import { getLocaleTag } from '../i18n/core'
+import { useI18n } from '../i18n/useI18n'
 import { formatRelativeTime } from '../utils/format'
 
-const STAT_LABELS: Record<string, string> = {
-  total_users: 'Користувачів',
-  online_users: 'Онлайн зараз',
-  admins: 'Адміністраторів',
-  blocked_users: 'Заблоковано',
-  new_users_24h: 'Нових за 24г',
-  total_conversations: 'Діалогів',
-  total_messages: 'Повідомлень',
-  messages_24h: 'Повідомлень за 24г',
-  websocket_connections: 'WS-зʼєднань',
-}
-
 export function AdminPage() {
+  const { t } = useI18n()
   const [tab, setTab] = useState<'users' | 'logs'>('users')
 
   return (
     <div className="min-h-dvh bg-ink-950 px-4 py-8">
       <div className="mx-auto max-w-5xl">
-        <Link to="/chat" className="mb-6 inline-flex items-center gap-1.5 text-sm text-ink-400 hover:text-ink-100">
-          <ArrowLeft size={16} /> До чатів
-        </Link>
-        <h1 className="font-display text-2xl text-ink-50">Адмін-панель</h1>
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <Link to="/chat" className="inline-flex items-center gap-1.5 text-sm text-ink-400 hover:text-ink-100">
+            <ArrowLeft size={16} /> {t('common.backToChats')}
+          </Link>
+          <LangSwitch />
+        </div>
+        <h1 className="font-display text-2xl text-ink-50">{t('admin.title')}</h1>
 
         <StatsGrid />
 
@@ -38,7 +33,7 @@ export function AdminPage() {
               onClick={() => setTab(key)}
               className={`px-4 py-2.5 text-sm font-medium ${tab === key ? 'border-b-2 border-signal-500 text-ink-50' : 'text-ink-500 hover:text-ink-200'}`}
             >
-              {key === 'users' ? 'Користувачі' : 'Журнал подій'}
+              {key === 'users' ? t('admin.tabUsers') : t('admin.tabLogs')}
             </button>
           ))}
         </div>
@@ -50,6 +45,7 @@ export function AdminPage() {
 }
 
 function StatsGrid() {
+  const { t } = useI18n()
   const { data } = useQuery({ queryKey: ['admin-stats'], queryFn: adminApi.statistics, refetchInterval: 15_000 })
   if (!data) return <div className="mt-6 h-24 animate-pulse rounded-xl2 bg-ink-900" />
   const keys: (keyof typeof data)[] = ['total_users', 'online_users', 'total_conversations', 'messages_24h', 'blocked_users', 'admins']
@@ -58,7 +54,7 @@ function StatsGrid() {
       {keys.map((key) => (
         <div key={key} className="rounded-xl2 border border-ink-800 bg-ink-900 p-4">
           <p className="text-2xl font-semibold text-ink-50">{data[key]}</p>
-          <p className="mt-0.5 text-xs text-ink-500">{STAT_LABELS[key]}</p>
+          <p className="mt-0.5 text-xs text-ink-500">{t(`admin.stat.${key}`)}</p>
         </div>
       ))}
     </div>
@@ -66,6 +62,7 @@ function StatsGrid() {
 }
 
 function UsersTable() {
+  const { t } = useI18n()
   const [query, setQuery] = useState('')
   const queryClient = useQueryClient()
   const usersQuery = useQuery({
@@ -87,18 +84,18 @@ function UsersTable() {
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Пошук за username, email або імʼям…"
+        placeholder={t('admin.searchPlaceholder')}
         className="mb-3 w-full max-w-sm rounded-lg border border-ink-700 bg-ink-900 px-3.5 py-2 text-sm text-ink-50 placeholder:text-ink-500 focus:border-signal-400 focus:outline-none"
       />
       <div className="scrollbar-thin overflow-x-auto rounded-xl2 border border-ink-800">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="bg-ink-900 text-xs text-ink-500">
             <tr>
-              <th className="px-4 py-3 font-medium">Користувач</th>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Роль</th>
-              <th className="px-4 py-3 font-medium">Статус</th>
-              <th className="px-4 py-3 font-medium">Реєстрація</th>
+              <th className="px-4 py-3 font-medium">{t('admin.colUser')}</th>
+              <th className="px-4 py-3 font-medium">{t('admin.colEmail')}</th>
+              <th className="px-4 py-3 font-medium">{t('admin.colRole')}</th>
+              <th className="px-4 py-3 font-medium">{t('admin.colStatus')}</th>
+              <th className="px-4 py-3 font-medium">{t('admin.colRegistered')}</th>
               <th className="px-4 py-3 font-medium" />
             </tr>
           </thead>
@@ -122,9 +119,9 @@ function UsersTable() {
                 </td>
                 <td className="px-4 py-3">
                   {u.is_blocked ? (
-                    <span className="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs text-rose-400">заблокований</span>
+                    <span className="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs text-rose-400">{t('admin.statusBlocked')}</span>
                   ) : (
-                    <span className="rounded-full bg-moss-500/15 px-2 py-0.5 text-xs text-moss-400">активний</span>
+                    <span className="rounded-full bg-moss-500/15 px-2 py-0.5 text-xs text-moss-400">{t('admin.statusActive')}</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-ink-500">{formatRelativeTime(u.created_at)}</td>
@@ -134,20 +131,20 @@ function UsersTable() {
                       <button
                         onClick={() => blockMutation.mutate({ id: u.id, blocked: !u.is_blocked })}
                         className="rounded p-1.5 text-ink-400 hover:bg-ink-800 hover:text-signal-400"
-                        aria-label={u.is_blocked ? 'Розблокувати' : 'Заблокувати'}
-                        title={u.is_blocked ? 'Розблокувати' : 'Заблокувати'}
+                        aria-label={u.is_blocked ? t('common.unblock') : t('common.block')}
+                        title={u.is_blocked ? t('common.unblock') : t('common.block')}
                       >
                         <Ban size={15} />
                       </button>
                       <button
                         onClick={() => {
-                          if (window.confirm(`Видалити користувача ${u.username}? Дію не можна скасувати.`)) {
+                          if (window.confirm(t('admin.confirmDelete', { username: u.username }))) {
                             deleteMutation.mutate(u.id)
                           }
                         }}
                         className="rounded p-1.5 text-ink-400 hover:bg-ink-800 hover:text-rose-400"
-                        aria-label="Видалити"
-                        title="Видалити"
+                        aria-label={t('common.delete')}
+                        title={t('common.delete')}
                       >
                         <Trash2 size={15} />
                       </button>
@@ -158,13 +155,14 @@ function UsersTable() {
             ))}
           </tbody>
         </table>
-        {usersQuery.data?.items.length === 0 && <p className="px-4 py-6 text-center text-sm text-ink-500">Нікого не знайдено</p>}
+        {usersQuery.data?.items.length === 0 && <p className="px-4 py-6 text-center text-sm text-ink-500">{t('admin.noUsers')}</p>}
       </div>
     </div>
   )
 }
 
 function LogsTable() {
+  const { t } = useI18n()
   const [level, setLevel] = useState('')
   const logsQuery = useQuery({
     queryKey: ['admin-logs', level],
@@ -179,7 +177,7 @@ function LogsTable() {
         onChange={(e) => setLevel(e.target.value)}
         className="mb-3 rounded-lg border border-ink-700 bg-ink-900 px-3 py-2 text-sm text-ink-50 focus:border-signal-400 focus:outline-none"
       >
-        <option value="">Усі рівні</option>
+        <option value="">{t('admin.allLevels')}</option>
         <option value="INFO">INFO</option>
         <option value="WARNING">WARNING</option>
         <option value="ERROR">ERROR</option>
@@ -188,17 +186,17 @@ function LogsTable() {
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="sticky top-0 bg-ink-900 text-xs text-ink-500">
             <tr>
-              <th className="px-4 py-2.5 font-medium">Час</th>
-              <th className="px-4 py-2.5 font-medium">Рівень</th>
-              <th className="px-4 py-2.5 font-medium">Подія</th>
-              <th className="px-4 py-2.5 font-medium">Хто</th>
-              <th className="px-4 py-2.5 font-medium">Деталі</th>
+              <th className="px-4 py-2.5 font-medium">{t('admin.colTime')}</th>
+              <th className="px-4 py-2.5 font-medium">{t('admin.colLevel')}</th>
+              <th className="px-4 py-2.5 font-medium">{t('admin.colEvent')}</th>
+              <th className="px-4 py-2.5 font-medium">{t('admin.colActor')}</th>
+              <th className="px-4 py-2.5 font-medium">{t('admin.colDetails')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-ink-800">
             {logsQuery.data?.items.map((log) => (
               <tr key={log.id} className="text-ink-200">
-                <td className="px-4 py-2 whitespace-nowrap text-ink-500">{new Date(log.created_at).toLocaleString('uk-UA')}</td>
+                <td className="px-4 py-2 whitespace-nowrap text-ink-500">{new Date(log.created_at).toLocaleString(getLocaleTag())}</td>
                 <td className="px-4 py-2">
                   <span
                     className={
@@ -219,7 +217,7 @@ function LogsTable() {
             ))}
           </tbody>
         </table>
-        {logsQuery.data?.items.length === 0 && <p className="px-4 py-6 text-center text-sm text-ink-500">Записів немає</p>}
+        {logsQuery.data?.items.length === 0 && <p className="px-4 py-6 text-center text-sm text-ink-500">{t('admin.noLogs')}</p>}
       </div>
     </div>
   )

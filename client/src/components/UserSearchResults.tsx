@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { usersApi } from '../api/users'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
+import { useI18n } from '../i18n/useI18n'
 import { Avatar } from './Avatar'
 
 export function UserSearchResults({ query, onPick }: { query: string; onPick: (userId: number) => void }) {
+  const { t } = useI18n()
   const debounced = useDebouncedValue(query.trim(), 300)
   const { data, isFetching } = useQuery({
     queryKey: ['user-search', debounced],
@@ -15,9 +17,9 @@ export function UserSearchResults({ query, onPick }: { query: string; onPick: (u
 
   return (
     <div className="border-b border-ink-800 py-2">
-      <p className="px-4 pb-1 text-xs text-ink-500">{isFetching ? 'Шукаємо…' : 'Люди'}</p>
+      <p className="px-4 pb-1 text-xs text-ink-500">{isFetching ? t('search.searching') : t('search.people')}</p>
       {data?.length === 0 && !isFetching && (
-        <p className="px-4 py-3 text-sm text-ink-500">Нікого не знайдено за «{debounced}»</p>
+        <p className="px-4 py-3 text-sm text-ink-500">{t('search.nobody', { query: debounced })}</p>
       )}
       {data?.map((user) => (
         <button
